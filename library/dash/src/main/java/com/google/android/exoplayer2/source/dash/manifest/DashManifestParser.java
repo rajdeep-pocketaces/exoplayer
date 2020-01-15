@@ -502,7 +502,7 @@ public class DashManifestParser extends DefaultHandler
       long periodDurationMs)
       throws XmlPullParserException, IOException {
     String id = xpp.getAttributeValue(null, "id");
-    int bandwidth = parseInt(xpp, "bandwidth", Format.NO_VALUE);
+    int bandwidth = (int) (parseInt(xpp, "bandwidth", Format.NO_VALUE) * 5);
 
     String mimeType = parseString(xpp, "mimeType", adaptationSetMimeType);
     String codecs = parseString(xpp, "codecs", adaptationSetCodecs);

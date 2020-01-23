@@ -92,6 +92,17 @@ public final class DashMediaSource extends BaseMediaSource {
     @Nullable private Object tag;
 
     /**
+     * Used for Loco
+     * Creates a new factory for {@link DashMediaSource}s.
+     *
+     * @param dataSourceFactory A factory for {@link DataSource} instances that will be used to load
+     *     manifest and media data.
+     */
+    public Factory(DataSource.Factory dataSourceFactory, long availabilityTimeOffset) {
+      this(new DefaultDashChunkSource.Factory(dataSourceFactory, availabilityTimeOffset), dataSourceFactory);
+    }
+
+    /**
      * Creates a new factory for {@link DashMediaSource}s.
      *
      * @param dataSourceFactory A factory for {@link DataSource} instances that will be used to load
@@ -1259,35 +1270,35 @@ public final class DashMediaSource extends BaseMediaSource {
           return C.TIME_UNSET;
         }
       }
-      // Attempt to snap to the start of the corresponding video segment.
-      int periodIndex = 0;
-      long defaultStartPositionInPeriodUs = offsetInFirstPeriodUs + windowDefaultStartPositionUs;
-      long periodDurationUs = manifest.getPeriodDurationUs(periodIndex);
-      while (periodIndex < manifest.getPeriodCount() - 1
-          && defaultStartPositionInPeriodUs >= periodDurationUs) {
-        defaultStartPositionInPeriodUs -= periodDurationUs;
-        periodIndex++;
-        periodDurationUs = manifest.getPeriodDurationUs(periodIndex);
-      }
-      com.google.android.exoplayer2.source.dash.manifest.Period period =
-          manifest.getPeriod(periodIndex);
-      int videoAdaptationSetIndex = period.getAdaptationSetIndex(C.TRACK_TYPE_VIDEO);
-      if (videoAdaptationSetIndex == C.INDEX_UNSET) {
-        // No video adaptation set for snapping.
-        return windowDefaultStartPositionUs;
-      }
-      // If there are multiple video adaptation sets with unaligned segments, the initial time may
-      // not correspond to the start of a segment in both, but this is an edge case.
-      DashSegmentIndex snapIndex = period.adaptationSets.get(videoAdaptationSetIndex)
-          .representations.get(0).getIndex();
-      if (snapIndex == null || snapIndex.getSegmentCount(periodDurationUs) == 0) {
-        // Video adaptation set does not include a non-empty index for snapping.
-        return windowDefaultStartPositionUs;
-      }
-      long segmentNum = snapIndex.getSegmentNum(defaultStartPositionInPeriodUs, periodDurationUs);
-      return windowDefaultStartPositionUs + snapIndex.getTimeUs(segmentNum)
-          - defaultStartPositionInPeriodUs;
-//      return windowDefaultStartPositionUs;
+//       Attempt to snap to the start of the corresponding video segment.
+//      int periodIndex = 0;
+//      long defaultStartPositionInPeriodUs = offsetInFirstPeriodUs + windowDefaultStartPositionUs;
+//      long periodDurationUs = manifest.getPeriodDurationUs(periodIndex);
+//      while (periodIndex < manifest.getPeriodCount() - 1
+//          && defaultStartPositionInPeriodUs >= periodDurationUs) {
+//        defaultStartPositionInPeriodUs -= periodDurationUs;
+//        periodIndex++;
+//        periodDurationUs = manifest.getPeriodDurationUs(periodIndex);
+//      }
+//      com.google.android.exoplayer2.source.dash.manifest.Period period =
+//          manifest.getPeriod(periodIndex);
+//      int videoAdaptationSetIndex = period.getAdaptationSetIndex(C.TRACK_TYPE_VIDEO);
+//      if (videoAdaptationSetIndex == C.INDEX_UNSET) {
+//        // No video adaptation set for snapping.
+//        return windowDefaultStartPositionUs;
+//      }
+//      // If there are multiple video adaptation sets with unaligned segments, the initial time may
+//      // not correspond to the start of a segment in both, but this is an edge case.
+//      DashSegmentIndex snapIndex = period.adaptationSets.get(videoAdaptationSetIndex)
+//          .representations.get(0).getIndex();
+//      if (snapIndex == null || snapIndex.getSegmentCount(periodDurationUs) == 0) {
+//        // Video adaptation set does not include a non-empty index for snapping.
+//        return windowDefaultStartPositionUs;
+//      }
+//      long segmentNum = snapIndex.getSegmentNum(defaultStartPositionInPeriodUs, periodDurationUs);
+//      return windowDefaultStartPositionUs + snapIndex.getTimeUs(segmentNum)
+//          - defaultStartPositionInPeriodUs;
+      return windowDefaultStartPositionUs;
     }
 
     @Override

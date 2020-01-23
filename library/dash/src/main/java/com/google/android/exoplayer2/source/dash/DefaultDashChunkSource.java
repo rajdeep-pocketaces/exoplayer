@@ -61,10 +61,22 @@ import java.util.List;
  */
 public class DefaultDashChunkSource implements DashChunkSource {
 
+  public static long TIME_OFFSET = 0;
+
   public static final class Factory implements DashChunkSource.Factory {
 
     private final DataSource.Factory dataSourceFactory;
     private final int maxSegmentsPerLoad;
+
+    /**
+     * Constructor for Loco which passes uses availabilityTimeOffset
+     * @param dataSourceFactory
+     * @param availabilityTimeOffset
+     */
+    public Factory(DataSource.Factory dataSourceFactory, long availabilityTimeOffset) {
+      this(dataSourceFactory, /* maxSegmentsPerLoad= */ 1);
+      TIME_OFFSET = availabilityTimeOffset;
+    }
 
     public Factory(DataSource.Factory dataSourceFactory) {
       this(dataSourceFactory, /* maxSegmentsPerLoad= */ 1);
@@ -772,7 +784,7 @@ public class DefaultDashChunkSource implements DashChunkSource {
         // The index is itself unbounded. We need to use the current time to calculate the range of
         // available segments.
         long liveEdgeTimeUs = nowUnixTimeUs - C.msToUs(manifest.availabilityStartTimeMs);
-        liveEdgeTimeUs += 2900000;
+        liveEdgeTimeUs += TIME_OFFSET;
         long periodStartUs = C.msToUs(manifest.getPeriod(periodIndex).startMs);
         long liveEdgeTimeInPeriodUs = liveEdgeTimeUs - periodStartUs;
         // getSegmentNum(liveEdgeTimeInPeriodUs) will not be completed yet, so subtract one to get
